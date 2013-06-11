@@ -64,6 +64,7 @@ __books.html__
     </table>
 
 
+
 ##Advanced Usage
 
 If you need more control over the behavior of django-sortable, you can use the Sortable class directly. Here's how you'd do it:
@@ -108,6 +109,8 @@ __authors.html__
         {% endfor %}
     </table>
 
+##Other
+When calling sortable_link, you may use variables in place of the field and title, or use a variable as the field and a constant that does not conflict with the local variables.
 
 ##Raw SQL Usage
 

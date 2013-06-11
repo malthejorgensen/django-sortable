@@ -15,11 +15,16 @@ directions = {
 }
 
 
+
+
+
+
+
 def parse_tag_token(token):
   """Parses a tag that's supposed to be in this format: {% sortable_link field title %}  """
   bits = [b.strip('"\'') for b in token.split_contents()]
   if len(bits) < 2:
-    raise template.TemplateSyntaxError, "anchor tag takes at least 1 argument"
+    raise TemplateSyntaxError, "anchor tag takes at least 1 argument"
   try:
     title = bits[2]
   except IndexError:
@@ -34,22 +39,40 @@ def parse_tag_token(token):
 class SortableLinkNode(template.Node):
   """Build sortable link based on query params."""
   
-  def __init__(self, field_name, title):
-    if field_name.startswith('-'):
-      self.field_name = field_name[1:]
-      self.default_direction = 'desc'
-    elif field_name.startswith('+'):
-      self.field_name = field_name[1:]
-      self.default_direction = 'asc'
-    else:
-      self.field_name = field_name
-      self.default_direction = 'asc'
-    
+  def __init__(self, field_name, title, var_names=False):
+    self.var_names = var_names
+    self.default_direction = 'asc'
+    self.field_name = field_name
     self.title = title
+
+    # If we're actually passing in values
+    # only change values that aren't the
+    # same as the default
+    if not var_names:
+      if field_name.startswith('-'):
+        self.field_name = field_name[1:]
+        self.default_direction = 'desc'
+      elif field_name.startswith('+'):
+        self.field_name = field_name[1:]
+
+
   
   
   def build_link(self, context):
     """Prepare link for rendering based on context."""
+    if self.var_names:
+      temp_field_name = self.field_name
+      temp_title = self.title
+
+      self.field_name = template.Variable(temp_field_name).resolve(context)
+      try:
+        self.title = template.Variable(temp_title).resolve(context)
+      except:
+        self.title = temp_title
+
+
+
+
     get_params = context['request'].GET.copy()
     
     field_name = get_params.get('sort', None)
