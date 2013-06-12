@@ -39,16 +39,23 @@ def parse_tag_token(token):
 class SortableLinkNode(template.Node):
   """Build sortable link based on query params."""
   
-  def __init__(self, field_name, title, var_names=False):
-    self.var_names = var_names
+  def __init__(self, field_name, title, use_var_names=False):
+    self.use_var_names = use_var_names
     self.default_direction = 'asc'
-    self.field_name = field_name
-    self.title = title
+    self.var_names = dict()
 
-    # If we're actually passing in values
-    # only change values that aren't the
-    # same as the default
-    if not var_names:
+
+    if use_var_names:
+      self.var_names['field_name'] = field_name
+      self.var_names['title'] = title
+    else:
+      # If we're actually passing in values
+      # only change values that aren't the
+      # same as the default
+      self.field_name = field_name
+      self.title = title
+      self.vars
+
       if field_name.startswith('-'):
         self.field_name = field_name[1:]
         self.default_direction = 'desc'
@@ -60,15 +67,13 @@ class SortableLinkNode(template.Node):
   
   def build_link(self, context):
     """Prepare link for rendering based on context."""
-    if self.var_names:
-      temp_field_name = self.field_name
-      temp_title = self.title
-
-      self.field_name = template.Variable(temp_field_name).resolve(context)
+    if self.use_var_names:
+      self.field_name = template.Variable(self.var_names['field_name']).resolve(context)
       try:
-        self.title = template.Variable(temp_title).resolve(context)
+        self.title = template.Variable(self.var_names['title']).resolve(context)
       except:
-        self.title = temp_title
+        self.title = self.var_names['title']
+
 
 
 
@@ -140,7 +145,7 @@ def sortable_link(parser, token):
 
 def sortable_vars_link(parser, token):
   var_names = token.split_contents()[1:]
-  return SortableLinkNode(field_name=var_names[0], title=var_names[1], var_names=True)
+  return SortableLinkNode(field_name=var_names[0], title=var_names[1], use_var_names=True)
 
 def sortable_header(parser, token):
   field, title = parse_tag_token(token)
