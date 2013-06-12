@@ -161,4 +161,4 @@ sortable_link = register.tag(sortable_link)
 sortable_header = register.tag(sortable_header)
 sortable_url = register.tag(sortable_url)
 sortable_class = register.tag(sortable_class)
-
+sortable_vars_link = register.tag(sortable_vars_link)
