@@ -54,7 +54,6 @@ class SortableLinkNode(template.Node):
       # same as the default
       self.field_name = field_name
       self.title = title
-      self.vars
 
       if field_name.startswith('-'):
         self.field_name = field_name[1:]
@@ -68,6 +67,8 @@ class SortableLinkNode(template.Node):
   def build_link(self, context):
     """Prepare link for rendering based on context."""
     if self.use_var_names:
+      # Have to check everytime, because otherwise running through a for loop 
+      # would only give us the values of the first time through
       self.field_name = template.Variable(self.var_names['field_name']).resolve(context)
       try:
         self.title = template.Variable(self.var_names['title']).resolve(context)
