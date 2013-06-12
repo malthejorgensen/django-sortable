@@ -138,6 +138,10 @@ def sortable_link(parser, token):
   return SortableLinkNode(field, title)
 
 
+def sortable_vars_link(parser, token):
+  var_names = token.split_contents()[1:]
+  return SortableLinkNode(field_name=var_names[0], title=var_names[1], var_names=True)
+
 def sortable_header(parser, token):
   field, title = parse_tag_token(token)
   return SortableTableHeaderNode(field, title)
