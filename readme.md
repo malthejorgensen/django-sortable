@@ -110,7 +110,36 @@ __authors.html__
     </table>
 
 ##Other
-When calling sortable_link, you may use variables in place of the field and title, or use a variable as the field and a constant that does not conflict with the local variables.
+You may also call sortable_vars_link using variables in place of the field and title, or use a variable as the field and a constant that does not conflict with the local variables.
+
+__views.py__
+
+    from django_sortable.helpers import sortable_helper
+  
+    def books(request):
+        book_list = Book.objects.all()
+        books = sortable_helper(request, book_list)
+        
+        sortables = [
+            ('title', 'Title'), 
+            ('published', 'Date Published'), 
+        ]
+
+        return render_to_response('books.html', {'books': books, 'sort_options': sortables})
+
+__books.html__
+
+    {% load sortable %}
+  
+    Sort by:
+    <ul>
+    {% for sort_arr in sort_options %}
+        <li>{% sortable_vars_link sort_arr.0 sort_arr.1 %}</li>
+    {% endfor %}
+    </ul>
+
+    ...
+
 
 ##Raw SQL Usage
 
