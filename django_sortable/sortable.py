@@ -189,7 +189,7 @@ class SortableWithHeaders(Sortable):
     sorted_dict = SortedDict()
 
     sorted_items = super(SortableWithHeaders, self).sorted(field_name, direction)
-    sorted_headers = self.get_sorted_headers()
+    sorted_headers = self.get_sorted_headers(direction)
 
     if len(sorted_headers) < 2:
       if self.one_header == None: # Just return the items
