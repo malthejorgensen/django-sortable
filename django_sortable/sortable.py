@@ -150,17 +150,16 @@ class SortableWithHeaders(Sortable):
     self.header_type = header_type
     self.sorted_relations = None
     
-    if header_type == HeaderType.NONE:
-      self.one_header = None
-    else:
-      self.one_header = one_header
+    self.one_header = one_header
 
     self.sorted_relations = sorted_relations
     self.related_header_field = related_header_field
 
   def get_sorted_headers(self, direction='asc'):
     if self.header_type == HeaderType.NONE:
-      return list(self.one_header,)
+      res = list()
+      res.append(self.header_one)
+      return res
     elif self.header_type == HeaderType.ALPHA:
       import string
 
@@ -189,7 +188,12 @@ class SortableWithHeaders(Sortable):
     sorted_dict = SortedDict()
 
     sorted_items = super(SortableWithHeaders, self).sorted(field_name, direction)
+    if self.header_type == HeaderType.NONE:
+      sorted_dict[self.one_header] = sorted_items
+      return sorted_dict
+
     sorted_headers = self.get_sorted_headers(direction)
+
 
     if len(sorted_headers) < 2:
       if self.one_header == None: # Just return the items
