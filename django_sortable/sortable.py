@@ -158,15 +158,25 @@ class SortableWithHeaders(Sortable):
     self.sorted_relations = sorted_relations
     self.related_header_field = related_header_field
 
-  def get_sorted_headers(self):
+  def get_sorted_headers(self, direction='asc'):
     if self.header_type == HeaderType.NONE:
       return list(self.one_header,)
     elif self.header_type == HeaderType.ALPHA:
       import string
+
+      if direction == 'desc':
+        # reverse the string
+        return string.ascii_uppercase[::-1]
+
       return string.ascii_uppercase
     elif self.header_type == HeaderType.M2M or self.header_type == HeaderType.FK:
       res = SortedDict()
-      for item in self.sorted_relations:
+
+      qs = self.sorted_relations
+      if direction == 'desc':
+        qs = qs.reverse()
+
+      for item in qs:
         header = getattr(item, self.related_header_field)
         res[header] = item
 
