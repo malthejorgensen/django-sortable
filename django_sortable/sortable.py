@@ -1,5 +1,8 @@
 from operator import itemgetter, attrgetter
+from django.utils.datastructures import SortedDict
 
+#TODO 
+# sniff the field_name to decide how to sort if not explicitly told
 
 class SortableInvalidObjectsException(Exception): pass
 
@@ -130,3 +133,76 @@ class Sortable(object):
       else:
         fields[i] = '%s ASC' % (field,)
     return fields
+
+# TODO: Do can FK/M2M be combined? Add RAGE_DATE and RANGE_NUM
+class HeaderType(object):
+  NONE = 0
+  ALPHA = 1
+  M2M = 2
+  FK = 3
+
+# TODO: Document usage, write helper
+class SortableWithHeaders(Sortable):
+
+  def __init__(self, objects, fields, header_type=HeaderType.NONE, one_header='All', sorted_relations=None, related_header_field=None):
+    super(SortableWithHeaders, self).__init__(objects, fields)
+
+    self.header_type = header_type
+    self.sorted_relations = None
+    
+    if header_type == HeaderType.NONE:
+      self.one_header = None
+    else:
+      self.one_header = one_header
+
+    self.sorted_relations = sorted_relations
+    self.related_header_field = related_header_field
+
+  def get_sorted_headers(self):
+    if self.header_type == HeaderType.NONE:
+      return list(self.one_header,)
+    elif self.header_type == HeaderType.ALPHA:
+      import string
+      return string.ascii_uppercase
+    elif self.header_type == HeaderType.M2M or self.header_type == HeaderType.FK:
+      res = SortedDict()
+      for item in self.sorted_relations:
+        header = getattr(item, self.related_header_field)
+        res[header] = item
+
+      return res
+    else:
+      return self.one_header
+
+  def sorted(self, field_name, direction='asc'):
+    """Returns sorted dictionary of lists."""
+    sorted_dict = SortedDict()
+
+    sorted_items = super(SortableWithHeaders, self).sorted(field_name, direction)
+    sorted_headers = self.get_sorted_headers()
+
+    if len(sorted_headers) < 2:
+      if self.one_header == None: # Just return the items
+        return sorted_items
+      else:
+        sorted_dict[self.one_header] = sorted_items
+        return sorted_dict
+
+    # Sort depending on the type of sort
+    if self.header_type == HeaderType.ALPHA:
+      for letter in sorted_headers:
+        filter_kwargs = { '{0}__istartswith'.format(field_name): letter}
+        starts_with_this_letter = sorted_items.filter(**filter_kwargs)
+        
+        if starts_with_this_letter.count():
+            sorted_dict[letter] = starts_with_this_letter
+    elif self.header_type == HeaderType.M2M or self.header_type == HeaderType.FK:
+      for header, obj in sorted_headers.iteritems():
+        filter_kwargs = { field_name: obj }
+        in_this_header = sorted_items.filter(**filter_kwargs)
+
+        if in_this_header.count():
+          sorted_dict[header] = in_this_header
+
+
+    return sorted_dict
