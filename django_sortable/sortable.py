@@ -144,7 +144,7 @@ class HeaderType(object):
 # TODO: Document usage, write helper
 class SortableWithHeaders(Sortable):
 
-  def __init__(self, objects, fields, header_type=HeaderType.NONE, one_header='All', sorted_relations=None, related_header_field=None):
+  def __init__(self, objects, fields=None, header_type=HeaderType.NONE, one_header='All', sorted_relations=None, related_header_field=None):
     super(SortableWithHeaders, self).__init__(objects, fields)
 
     self.header_type = header_type
