@@ -55,13 +55,7 @@ class SortableLinkNode(template.Node):
       self.field_name = field_name
       self.title = title
 
-      if field_name.startswith('-'):
-        self.field_name = field_name[1:]
-        self.default_direction = 'desc'
-      elif field_name.startswith('+'):
-        self.field_name = field_name[1:]
-
-
+      self.process_field_name(field_name)
   
   
   def build_link(self, context):
@@ -70,6 +64,9 @@ class SortableLinkNode(template.Node):
       # Have to check everytime, because otherwise running through a for loop 
       # would only give us the values of the first time through
       self.field_name = template.Variable(self.var_names['field_name']).resolve(context)
+
+      self.process_field_name(self.field_name)
+
       try:
         self.title = template.Variable(self.var_names['title']).resolve(context)
       except:
@@ -113,6 +110,15 @@ class SortableLinkNode(template.Node):
   def render(self, context):
     url, css_class = self.build_link(context)
     return '<a href="%s" class="%s" title="%s">%s</a>' % (url, css_class, self.title, self.title)
+
+  def process_field_name(self, field_name):
+    self.field_name = field_name
+
+    if field_name.startswith('-'):
+      self.field_name = field_name[1:]
+      self.default_direction = 'desc'
+    elif field_name.startswith('+'):
+      self.field_name = field_name[1:]
 
 
 class SortableTableHeaderNode(SortableLinkNode):
