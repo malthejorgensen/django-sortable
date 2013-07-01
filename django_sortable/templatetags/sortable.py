@@ -56,14 +56,15 @@ class SortableLinkNode(template.Node):
       self.title = title
 
       self.process_field_name(field_name)
-  
-  
+      
   def build_link(self, context):
     """Prepare link for rendering based on context."""
     if self.use_var_names:
       # Have to check everytime, because otherwise running through a for loop 
       # would only give us the values of the first time through
+      self.default_direction = 'asc'
       self.field_name = template.Variable(self.var_names['field_name']).resolve(context)
+
 
       self.process_field_name(self.field_name)
 
