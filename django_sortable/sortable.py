@@ -140,15 +140,18 @@ class HeaderType(object):
   ALPHA = 1
   M2M = 2
   FK = 3
+  LIST_VALUES = 4
+  DATETIME_SIMPLE = 5
 
 # TODO: Document usage, write helper
 class SortableWithHeaders(Sortable):
 
-  def __init__(self, objects, fields=None, header_type=HeaderType.NONE, one_header='All', sorted_relations=None, related_header_field=None):
+  def __init__(self, objects, fields=None, header_type=HeaderType.NONE, one_header='All', sorted_relations=None, related_header_field=None, listed=None):
     super(SortableWithHeaders, self).__init__(objects, fields)
 
     self.header_type = header_type
     self.sorted_relations = None
+    self.listed = listed
     
     self.one_header = one_header
 
@@ -180,6 +183,16 @@ class SortableWithHeaders(Sortable):
         res[header] = item
 
       return res
+    elif self.header_type == HeaderType.DATETIME_SIMPLE:
+        res = SortedDict()
+        # res['Today'] = 
+        return ('Today', 'Last 7 days', 'Last 30 days', 'This year', 'More than 1 year ago')
+    elif self.header_type == HeaderType.LIST_VALUES:
+      return self.listed
+      if direction == 'desc':
+        return self.listed[::-1]
+      else:
+        return self.listed
     else:
       return self.one_header
 
@@ -217,6 +230,36 @@ class SortableWithHeaders(Sortable):
 
         if in_this_header.count():
           sorted_dict[header] = in_this_header
+    # elif self.header_type == HeaderType.DATETIME_SIMPLE:
+    #   pass
+        # sorted_dict = 
 
+
+
+        # sorted_dict()
+
+        # 1: (_('Today'), lambda qs, name: qs.filter(**{
+        #     '%s__year' % name: now().year,
+        #     '%s__month' % name: now().month,
+        #     '%s__day' % name: now().day
+        # })),
+        # 2: (_('Past 7 days'), lambda qs, name: qs.filter(**{
+        #     '%s__gte' % name: _truncate(now() - timedelta(days=7)),
+        #     '%s__lt' % name: _truncate(now() + timedelta(days=1)),
+        # })),
+        # 3: (_('This month'), lambda qs, name: qs.filter(**{
+        #     '%s__year' % name: now().year,
+        #     '%s__month' % name: now().month
+        # })),
+        # 4: (_('This year'), lambda qs, name: qs.filter(**{
+        #     '%s__year' % name: now().year,
+        # })),
+    elif self.header_type == HeaderType.LIST_VALUES:
+      for value in sorted_headers: 
+        filter_kwargs = {field_name: value}
+        with_this_value = sorted_items.filter(**filter_kwargs)
+
+        if with_this_value.count():
+          sorted_dict[value] = with_this_value
 
     return sorted_dict
