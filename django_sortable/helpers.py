@@ -1,4 +1,7 @@
-from sortable import Sortable
+try:
+    from sortable import Sortable
+except ImportError:
+    from .sortable import Sortable
 
 
 def sortable_helper(request, objects, fields=None):
